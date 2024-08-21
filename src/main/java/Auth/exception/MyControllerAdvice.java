@@ -22,6 +22,10 @@ public class MyControllerAdvice extends ResponseEntityExceptionHandler {
     public ResponseEntity<String> userNotFoundError(UserNotFoundException userNotFoundException) {
         return new ResponseEntity<>("User not found!", HttpStatus.BAD_REQUEST);
     }
+    @ExceptionHandler(UserAlreadyExistsException.class)
+    public ResponseEntity<String> usernameIsNotAvailable(UserAlreadyExistsException userAlreadyExistsException) {
+        return new ResponseEntity<>("Username is not available!", HttpStatus.BAD_REQUEST);
+    }
 
     //    ALWAYS KEEP THIS METHOD AT THE BOTTOM
     @Override

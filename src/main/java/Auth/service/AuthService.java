@@ -2,6 +2,7 @@ package Auth.service;
 
 import Auth.config.security.JwtService;
 import Auth.entity.UserEntity;
+import Auth.exception.UserAlreadyExistsException;
 import Auth.model.Auth;
 import Auth.repository.UserRepository;
 import Auth.request.AuthRequest;
@@ -37,11 +38,13 @@ public class AuthService {
 
 
     public Auth register(RegisterRequest registerRequest) {
-        var user = User.builder()
-                .username(registerRequest.getUsername())
-                .password(passwordEncoder.encode(registerRequest.getPassword()))
-                .authorities("user")
-                .build();
+            var user = User.builder()
+                    .username(registerRequest.getUsername())
+                    .password(passwordEncoder.encode(registerRequest.getPassword()))
+                    .authorities("user")
+                    .build();
+        if (userDetailsManager.userExists(user.getUsername())) throw new UserAlreadyExistsException();
+
         userDetailsManager.createUser(user);
         var jwt = jwtService.generateToken(Map.of(user.getUsername(), user.getAuthorities()),user);
         return  Auth.builder().token(jwt).build();
