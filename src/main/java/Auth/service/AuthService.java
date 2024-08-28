@@ -1,41 +1,32 @@
 package Auth.service;
 
 import Auth.config.security.JwtService;
-import Auth.entity.UserEntity;
 import Auth.exception.UserAlreadyExistsException;
 import Auth.model.Auth;
 import Auth.repository.UserRepository;
 import Auth.request.AuthRequest;
 import Auth.request.RegisterRequest;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.UserDetailsManager;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Map;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final UserDetailsManager userDetailsManager;
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
-
-    public AuthService(PasswordEncoder passwordEncoder, JwtService jwtService, UserDetailsManager userDetailsManager, AuthenticationManager authenticationManager, UserRepository userRepository) {
-        this.passwordEncoder = passwordEncoder;
-        this.jwtService = jwtService;
-        this.userDetailsManager = userDetailsManager;
-        this.authenticationManager = authenticationManager;
-        this.userRepository = userRepository;
-    }
-
 
     public Auth register(RegisterRequest registerRequest) {
             var user = User.builder()
@@ -62,7 +53,9 @@ public class AuthService {
             throw new RuntimeException("Invalid credentials", e);
         }
         var user = userRepository.findByUsername(authRequest.getUsername()).orElseThrow();
-        var jwt = jwtService.generateToken(Map.of(user.getUsername(), user.getAuthorities()),user);
+        var jwt = jwtService.generateToken(Map.of(user.getUsername(), user.getAuthorities()), user);
+        user.setToken(jwt);
+        userRepository.save(user);
         return  Auth.builder().token(jwt).build();
     }
 }

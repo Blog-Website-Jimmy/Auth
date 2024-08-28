@@ -2,6 +2,7 @@ package Auth.config.security;
 
 import lombok.extern.slf4j.Slf4j;
 import org.flywaydb.core.Flyway;
+    import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,11 +16,25 @@ import javax.sql.DataSource;
 @Slf4j
 @Configuration
 public class SecurityConfig {
+    @Value("${spring.db.host}")
+    private  String DB_Host;
+
+    @Value("${spring.db.port}")
+    private  String DB_port;
+
+    @Value("${spring.db.name}")
+    private  String DB_Name;
+
+    @Value("${spring.db.username}")
+    private  String DB_Username;
+
+    @Value("${spring.db.password}")
+    private  String DB_Password;
 
     @Bean
     public Flyway executeMigrations() {
         Flyway flyway = Flyway.configure()
-                .dataSource("jdbc:postgresql://localhost:5434/users", "postgres", "123456")
+                .dataSource("jdbc:postgresql://"+DB_Host+":"+DB_port+"/"+DB_Name, DB_Username, DB_Password)
                 .load();
 
         flyway.migrate();
